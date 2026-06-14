@@ -1,0 +1,105 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  firstName    String
+  lastName     String
+  profileImage String?
+  bio          String?
+  location     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  listings Listing[] @relation("HostListings")
+  bookings Booking[]
+  reviews  Review[]
+}
+
+model Listing {
+  id            String  @id @default(uuid())
+  title         String
+  description   String
+  propertyType  String
+  location      String
+  googleMapsUrl String?
+
+  maxGuests Int
+  bedrooms  Int
+  beds      Int
+  baths     Float
+
+  pricePerNight Float
+  cleaningFee   Float @default(0)
+  discountPct   Float @default(0)
+
+  hasWifi    Boolean @default(false)
+  hasPool    Boolean @default(false)
+  hasKitchen Boolean @default(false)
+  hasParking Boolean @default(false)
+  hasAc      Boolean @default(false)
+  hasTv      Boolean @default(false)
+
+  hostId   String
+  host     User           @relation("HostListings", fields: [hostId], references: [id], onDelete: Cascade)
+  images   ListingImage[]
+  bookings Booking[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([location])
+  @@index([hostId])
+}
+
+model ListingImage {
+  id      String  @id @default(uuid())
+  url     String
+  isCover Boolean @default(false)
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  checkIn    DateTime
+  checkOut   DateTime
+  guestCount Int
+  totalPrice Float
+  status     String   @default("CONFIRMED")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id      String @id @default(uuid())
+  rating  Int
+  comment String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
