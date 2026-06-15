@@ -26,6 +26,7 @@ model User {
   listings Listing[] @relation("HostListings")
   bookings Booking[]
   reviews  Review[]
+  notifications Notification[] // NEW: Added relation
 }
 
 model Listing {
@@ -45,7 +46,6 @@ model Listing {
   cleaningFee   Float @default(0)
   discountPct   Float @default(0)
 
-  // --- ORIGINAL AMENITIES ---
   hasWifi    Boolean @default(false)
   hasPool    Boolean @default(false)
   hasKitchen Boolean @default(false)
@@ -53,7 +53,6 @@ model Listing {
   hasAc      Boolean @default(false)
   hasTv      Boolean @default(false)
 
-  // --- NEW AMENITIES ---
   hasWasher    Boolean @default(false)
   hasDryer     Boolean @default(false)
   hasHeating   Boolean @default(false)
@@ -113,4 +112,18 @@ model Review {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// --- NEW MODEL ---
+model Notification {
+  id          String   @id @default(uuid())
+  message     String
+  hostEmail   String   // So the guest can contact them
+  propertyName String 
+  isRead      Boolean  @default(false)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
 }

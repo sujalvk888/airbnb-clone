@@ -3,13 +3,14 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Calendar, MapPin, Users, CreditCard } from 'lucide-react';
+import { Loader2, Calendar, MapPin, Users, CreditCard, Bell, Mail } from 'lucide-react';
 
 export default function MyTrips() {
   const { token, user } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [trips, setTrips] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,16 +20,25 @@ export default function MyTrips() {
       return;
     }
 
-    const fetchTrips = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/my-trips`, {
+        const tripsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/my-trips`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch your trips.');
-        
-        const data = await response.json();
-        setTrips(data);
+        if (!tripsRes.ok) throw new Error('Failed to fetch your trips.');
+        const tripsData = await tripsRes.json();
+        setTrips(tripsData);
+
+        // Fetch Notifications
+        const notifRes = await fetch(`${import.meta.env.VITE_API_URL}/api/listings/notifications/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (notifRes.ok) {
+          const notifData = await notifRes.json();
+          setNotifications(notifData.filter(n => !n.isRead)); // Only show unread
+        }
+
       } catch (err) {
         setError(err.message);
       } finally {
@@ -36,8 +46,20 @@ export default function MyTrips() {
       }
     };
 
-    fetchTrips();
+    fetchData();
   }, [token, navigate]);
+
+  const markNotificationRead = async (id) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/listings/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (loading) {
     return (
@@ -51,6 +73,29 @@ export default function MyTrips() {
     <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8">Trips</h1>
       
+       {/* NOTIFICATIONS SECTION */}
+       {notifications.length > 0 && (
+        <div className="mb-10 flex flex-col gap-3">
+          <h2 className="font-bold flex items-center gap-2 text-gray-900"><Bell className="h-5 w-5" /> Important Updates</h2>
+          {notifications.map(notif => (
+            <div key={notif.id} className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <p className="text-blue-900 font-medium mb-2">{notif.message}</p>
+                <a href={`mailto:${notif.hostEmail}?subject=Question regarding my booking at ${notif.propertyName}`} className="text-sm font-bold text-blue-700 hover:underline flex items-center gap-1">
+                  <Mail className="h-4 w-4"/> Contact Host: {notif.hostEmail}
+                </a>
+              </div>
+              <button 
+                onClick={() => markNotificationRead(notif.id)}
+                className="bg-white text-blue-700 text-sm font-bold px-4 py-2 border border-blue-200 rounded-lg shadow-sm hover:bg-blue-100 transition whitespace-nowrap"
+              >
+                Mark as Read
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {error && <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-8">{error}</div>}
 
       {trips.length === 0 ? (

@@ -3,7 +3,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Home, Star, DollarSign, CalendarCheck } from 'lucide-react';
+import { Loader2, Home, Star, DollarSign, CalendarCheck, Edit, Trash2 } from 'lucide-react';
 
 export default function MyProperties() {
   const { token } = useContext(AuthContext);
@@ -13,31 +13,58 @@ export default function MyProperties() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const fetchProperties = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/listings/my-listings`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch your properties.');
+      
+      const data = await response.json();
+      setProperties(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!token) {
       navigate('/login');
       return;
     }
-
-    const fetchProperties = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/listings/my-listings`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch your properties.');
-        
-        const data = await response.json();
-        setProperties(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProperties();
   }, [token, navigate]);
+
+  const handleDelete = async (id, title, hasActiveBookings) => {
+    if (hasActiveBookings) {
+      alert("You cannot delete this property because guests are currently staying or have upcoming reservations.");
+      return;
+    }
+
+    if (!window.confirm(`Are you absolutely sure you want to delete "${title}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/listings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete listing');
+      }
+
+      fetchProperties(); // Refresh the list
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -91,32 +118,48 @@ export default function MyProperties() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {properties.map(property => (
-            <Link key={property.id} to={`/listings/${property.id}`} className="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
-              <div className="h-48 w-full bg-gray-200 relative overflow-hidden">
-                <img src={property.coverImage} alt={property.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-md text-xs font-bold shadow-sm flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-gray-900 text-gray-900" />
-                  {property.avgRating || 'New'}
-                </div>
+            <div key={property.id} className="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col relative">
+               {/* Action Overlay */}
+              <div className="absolute top-2 right-2 z-10 flex gap-2">
+                <Link to={`/edit-listing/${property.id}`} className="bg-white p-2 rounded-full shadow hover:scale-110 transition text-gray-700 hover:text-blue-600">
+                  <Edit className="h-4 w-4" />
+                </Link>
+                <button 
+                  onClick={() => handleDelete(property.id, property.title, property.hasActiveBookings)}
+                  className={`bg-white p-2 rounded-full shadow transition ${property.hasActiveBookings ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:text-red-600 text-gray-700'}`}
+                  title={property.hasActiveBookings ? "Cannot delete: Active bookings exist" : "Delete property"}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <div className="p-5 flex flex-col gap-2 flex-1">
-                <div>
-                  <h3 className="font-bold text-lg text-gray-900 line-clamp-1">{property.title}</h3>
-                  <p className="text-gray-500 text-sm line-clamp-1">{property.location}</p>
-                </div>
-                
-                <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
-                  <div className="flex flex-col text-gray-700">
-                    <span className="font-bold text-gray-900">{property.totalBookings}</span>
-                    <span className="text-xs text-gray-500">Bookings</span>
-                  </div>
-                  <div className="flex flex-col text-right text-green-600">
-                    <span className="font-bold text-gray-900">₹{property.totalEarnings.toFixed(2)}</span>
-                    <span className="text-xs text-gray-500">Earned</span>
+
+              <Link to={`/listings/${property.id}`} className="flex-1 flex flex-col hover:opacity-95 transition">
+                <div className="h-48 w-full bg-gray-200 relative overflow-hidden">
+                  <img src={property.coverImage} alt={property.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-md text-xs font-bold shadow-sm flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-gray-900 text-gray-900" />
+                    {property.avgRating || 'New'}
                   </div>
                 </div>
-              </div>
-            </Link>
+                <div className="p-5 flex flex-col gap-2 flex-1">
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 line-clamp-1">{property.title}</h3>
+                    <p className="text-gray-500 text-sm line-clamp-1">{property.location}</p>
+                  </div>
+                  
+                  <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
+                    <div className="flex flex-col text-gray-700">
+                      <span className="font-bold text-gray-900">{property.totalBookings}</span>
+                      <span className="text-xs text-gray-500">Bookings</span>
+                    </div>
+                    <div className="flex flex-col text-right text-green-600">
+                      <span className="font-bold text-gray-900">₹{property.totalEarnings.toFixed(2)}</span>
+                      <span className="text-xs text-gray-500">Earned</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
       )}
