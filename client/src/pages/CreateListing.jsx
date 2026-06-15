@@ -12,11 +12,11 @@ export default function CreateListing() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  // Property Data State (Updated with 6 new amenities)
+  // Property Data State (Adjusted default prices for Rupees)
   const [formData, setFormData] = useState({
     title: '', description: '', propertyType: 'Entire home', location: '', googleMapsUrl: '',
     maxGuests: 1, bedrooms: 1, beds: 1, baths: 1,
-    pricePerNight: 50, cleaningFee: 0, discountPct: 0,
+    pricePerNight: 4000, cleaningFee: 0, discountPct: 0,
     hasWifi: false, hasPool: false, hasKitchen: false, hasParking: false, hasAc: false, hasTv: false,
     hasWasher: false, hasDryer: false, hasHeating: false, hasWorkspace: false, hasGym: false, hasHotTub: false
   });
@@ -239,11 +239,11 @@ export default function CreateListing() {
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Price per Night ($)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Price per Night (₹)</label>
               <input type="number" name="pricePerNight" min="1" required value={formData.pricePerNight} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Cleaning Fee ($)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Cleaning Fee (₹)</label>
               <input type="number" name="cleaningFee" min="0" value={formData.cleaningFee} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none" />
             </div>
             <div>

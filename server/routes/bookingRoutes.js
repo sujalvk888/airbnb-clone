@@ -152,7 +152,7 @@ router.post('/', verifyToken, async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'inr', // <--- UPDATED THIS LINE FROM 'usd' TO 'inr'
             product_data: {
               name: `Stay at ${listing.title}`,
               description: `${days} nights (${checkIn} to ${checkOut}) for ${guestCount} guests.`,
@@ -160,6 +160,7 @@ router.post('/', verifyToken, async (req, res) => {
                 ? [listing.images[0].url]
                 : []
             },
+            // Stripe handles INR in paise (1 INR = 100 paise), so this math remains exactly the same!
             unit_amount: Math.round(
               secureTotalPrice * 100
             )

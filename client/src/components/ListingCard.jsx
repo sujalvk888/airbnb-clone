@@ -162,7 +162,7 @@ export default function ListingCard({ listing }) {
             <p className="text-gray-500 text-sm truncate max-w-[200px]">{listing.title}</p>
             <p className="text-gray-500 text-sm">{listing.beds} {listing.beds === 1 ? 'bed' : 'beds'}</p>
             <div className="mt-1 flex items-center gap-1">
-              <span className="font-medium text-gray-900">${listing.pricePerNight}</span>
+              <span className="font-medium text-gray-900">₹{listing.pricePerNight}</span>
               <span className="text-gray-900 text-sm">night</span>
             </div>
           </div>

@@ -7,12 +7,12 @@ import {
   Star, MapPin, Wifi, Waves, ChefHat, Car, Wind, Tv, 
   UserCircle, MessageCircle, Share, Heart, Loader2,
   X, ChevronRight, 
-  Shirt, Fan, Flame, Monitor, Dumbbell, Bath // <-- NEW ICONS ADDED
+  Shirt, Fan, Flame, Monitor, Dumbbell, Bath
 } from 'lucide-react';
 
 export default function ListingDetail() {
   const { id } = useParams();
-  const { user, token, toggleWishlist } = useContext(AuthContext); // Added toggleWishlist from Context
+  const { user, token, toggleWishlist } = useContext(AuthContext); 
   const navigate = useNavigate();
 
   const [listing, setListing] = useState(null);
@@ -468,7 +468,7 @@ export default function ListingDetail() {
           <div className="w-full lg:w-1/3 relative z-10">
             <div className="sticky top-28 bg-white p-6 rounded-2xl shadow-xl border border-gray-200">
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-2xl font-bold text-gray-900">${listing.pricePerNight}</span>
+                <span className="text-2xl font-bold text-gray-900">₹{listing.pricePerNight}</span>
                 <span className="text-gray-600">night</span>
               </div>
 
@@ -507,24 +507,24 @@ export default function ListingDetail() {
               {days > 0 && (
                 <div className="mt-6 space-y-3 text-gray-700">
                   <div className="flex justify-between">
-                    <span className="underline">${listing.pricePerNight} x {days} nights</span>
-                    <span>${basePrice.toFixed(2)}</span>
+                    <span className="underline">₹{listing.pricePerNight} x {days} nights</span>
+                    <span>₹{basePrice.toFixed(2)}</span>
                   </div>
                   {listing.cleaningFee > 0 && (
                     <div className="flex justify-between">
                       <span className="underline">Cleaning fee</span>
-                      <span>${listing.cleaningFee.toFixed(2)}</span>
+                      <span>₹{listing.cleaningFee.toFixed(2)}</span>
                     </div>
                   )}
                   {listing.discountPct > 0 && (
                     <div className="flex justify-between text-green-600 font-medium">
                       <span>Host discount ({listing.discountPct}%)</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>-₹{discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="pt-4 border-t border-gray-200 flex justify-between font-bold text-lg text-gray-900">
                     <span>Total</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>₹{totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
               )}

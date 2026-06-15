@@ -89,7 +89,7 @@ export default function MyTrips() {
                     </div>
                     <div className="flex items-center gap-3 text-sm text-gray-700 font-medium">
                       <CreditCard className="h-4 w-4 text-brand" />
-                      <span>Total: ${trip.totalPrice.toFixed(2)}</span>
+                      <span>Total: ₹{trip.totalPrice.toFixed(2)}</span>
                     </div>
                   </div>
                   

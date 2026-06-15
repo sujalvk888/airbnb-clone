@@ -74,7 +74,7 @@ export default function MyProperties() {
           </div>
           <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm flex items-center gap-4">
             <div className="h-12 w-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center"><DollarSign className="h-6 w-6"/></div>
-            <div><p className="text-sm text-gray-500 font-medium">Total Earnings</p><p className="text-2xl font-bold text-gray-900">${totalGlobalEarnings.toFixed(2)}</p></div>
+            <div><p className="text-sm text-gray-500 font-medium">Total Earnings</p><p className="text-2xl font-bold text-gray-900">₹{totalGlobalEarnings.toFixed(2)}</p></div>
           </div>
           <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm flex items-center gap-4">
             <div className="h-12 w-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center"><CalendarCheck className="h-6 w-6"/></div>
@@ -111,7 +111,7 @@ export default function MyProperties() {
                     <span className="text-xs text-gray-500">Bookings</span>
                   </div>
                   <div className="flex flex-col text-right text-green-600">
-                    <span className="font-bold text-gray-900">${property.totalEarnings.toFixed(2)}</span>
+                    <span className="font-bold text-gray-900">₹{property.totalEarnings.toFixed(2)}</span>
                     <span className="text-xs text-gray-500">Earned</span>
                   </div>
                 </div>
