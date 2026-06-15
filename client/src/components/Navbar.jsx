@@ -3,10 +3,10 @@
 import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Home, UserCircle, LogOut, Loader2 } from 'lucide-react'; // Added Loader2
+import { UserCircle, LogOut, Loader2 } from 'lucide-react';
+import logo from '../Images/Airbnb_Logo.png'; // Importing your new logo
 
 export default function Navbar() {
-  // Added 'loading' destructuring
   const { user, logout, loading } = useContext(AuthContext); 
   const navigate = useNavigate();
 
@@ -15,25 +15,35 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const handleLogoClick = () => {
+    window.dispatchEvent(new Event('resetHomeSearch'));
+  };
+
   return (
     <nav className="border-b bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-brand font-bold text-xl">
-            <Home className="h-8 w-8" />
-            <span className="hidden sm:block">AirbnbClone</span>
+          
+          {/* Updated Image Logo */}
+          <Link 
+            to="/" 
+            onClick={handleLogoClick}
+            className="flex items-center"
+          >
+            <img 
+              src={logo} 
+              alt="Airbnb Logo" 
+              className="h-8 object-contain" 
+            />
           </Link>
 
           {/* Right side navigation */}
           <div className="flex items-center gap-4">
             {loading ? (
-              // 1. Loading State: Show spinner while AuthContext checks the token
               <div className="flex items-center justify-center px-4">
                 <Loader2 className="h-5 w-5 text-gray-300 animate-spin" />
               </div>
             ) : user ? (
-              // 2. Logged In State
               <div className="flex items-center gap-2 sm:gap-4">
                 <Link
                   to="/my-trips"
@@ -83,7 +93,6 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              // 3. Logged Out State
               <div className="flex items-center gap-4">
                 <Link
                   to="/login"
