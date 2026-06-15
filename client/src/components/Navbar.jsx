@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { UserCircle, LogOut, Loader2 } from 'lucide-react';
-import logo from '../Images/Airbnb_Logo.png'; // Importing your new logo
+import logo from '../Images/Airbnb_Logo.png'; 
 
 export default function Navbar() {
   const { user, logout, loading } = useContext(AuthContext); 
@@ -24,7 +24,6 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           
-          {/* Updated Image Logo */}
           <Link 
             to="/" 
             onClick={handleLogoClick}
@@ -37,7 +36,6 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Right side navigation */}
           <div className="flex items-center gap-4">
             {loading ? (
               <div className="flex items-center justify-center px-4">
@@ -45,6 +43,15 @@ export default function Navbar() {
               </div>
             ) : user ? (
               <div className="flex items-center gap-2 sm:gap-4">
+                
+                {/* NEW WISHLIST LINK HERE */}
+                <Link
+                  to="/wishlist"
+                  className="text-sm font-bold text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-full transition hidden sm:block"
+                >
+                  Wishlists
+                </Link>
+
                 <Link
                   to="/my-trips"
                   className="text-sm font-bold text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-full transition hidden sm:block"
@@ -63,7 +70,7 @@ export default function Navbar() {
                   to="/become-a-host"
                   className="text-sm font-bold text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-full transition hidden sm:block"
                 >
-                  Airbnb your home
+                  Become a Host
                 </Link>
 
                 <Link

@@ -21,6 +21,7 @@ router.get('/profile', verifyToken, async (req, res) => {
         bio: true,
         location: true,
         createdAt: true,
+        wishlistIds: true, // <-- Ensure this is fetched too
       },
     });
     res.status(200).json(user);
@@ -57,13 +58,90 @@ router.put('/profile', verifyToken, upload.single('profileImage'), async (req, r
         profileImage: true,
         bio: true,
         location: true,
+        wishlistIds: true, // <-- Included here too
       },
     });
 
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error('Profile update execution failed:', error);
-    res.status(500).json({ error: 'Failed to accurately update profile database properties.' });
+    res.status(500).json({ error: 'Internal system error during profile update.' });
+  }
+});
+
+// 3. Toggle Wishlist (Add/Remove)
+router.patch('/:userId/wishlist', verifyToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { listingId } = req.body;
+
+    if (req.user.id !== userId) return res.status(403).json({ error: "Unauthorized access" });
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // NEW: Fetch the listing and prevent hosts from wishlisting their own property
+    const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+    if (!listing) return res.status(404).json({ error: "Listing not found" });
+    
+    if (listing.hostId === userId) {
+      return res.status(400).json({ error: "You cannot wishlist your own property." });
+    }
+
+    let updatedWishlist = [...(user.wishlistIds || [])];
+
+    if (updatedWishlist.includes(listingId)) {
+      updatedWishlist = updatedWishlist.filter(id => id !== listingId); // Remove
+    } else {
+      updatedWishlist.push(listingId); // Add
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { wishlistIds: updatedWishlist }
+    });
+
+    res.status(200).json({ wishlistIds: updatedUser.wishlistIds });
+  } catch (error) {
+    console.error("Wishlist Toggle Error:", error);
+    res.status(500).json({ error: "Internal system error" });
+  }
+});
+
+// 4. Get User's Saved Wishlist
+router.get('/:userId/wishlist', verifyToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (req.user.id !== userId) return res.status(403).json({ error: "Unauthorized access" });
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    
+    const wishlistedListings = await prisma.listing.findMany({
+      where: { id: { in: user.wishlistIds || [] } },
+      include: {
+        images: { where: { isCover: true }, take: 1 },
+        reviews: { select: { rating: true } }
+      }
+    });
+
+    const formattedListings = wishlistedListings.map(listing => {
+      const totalRating = listing.reviews.reduce((sum, review) => sum + review.rating, 0);
+      const avgRating = listing.reviews.length > 0 ? (totalRating / listing.reviews.length).toFixed(2) : null;
+
+      return {
+        ...listing,
+        coverImage: listing.images[0]?.url || 'https://placehold.co/600x400?text=No+Image',
+        avgRating,
+        images: undefined,
+        reviews: undefined
+      };
+    });
+
+    res.status(200).json(formattedListings);
+  } catch (error) {
+    console.error("Fetch Wishlist Error:", error);
+    res.status(500).json({ error: "Internal system error" });
   }
 });
 

@@ -21,6 +21,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  wishlistIds   String[]  @default([])
+
   listings Listing[] @relation("HostListings")
   bookings Booking[]
   reviews  Review[]

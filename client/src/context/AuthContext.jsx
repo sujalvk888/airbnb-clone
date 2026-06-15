@@ -18,11 +18,11 @@ export const AuthProvider = ({ children }) => {
       }
       try {
         const response = await fetch(
-  `${import.meta.env.VITE_API_URL}/api/users/profile`,
-  {
-    headers: { Authorization: `Bearer ${token}` }
-  }
-);
+          `${import.meta.env.VITE_API_URL}/api/users/profile`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
@@ -53,9 +53,31 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // NEW: Centralized Wishlist Toggle
+  const toggleWishlist = async (listingId) => {
+    if (!user || !token) return;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.id}/wishlist`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ listingId })
+      });
+      
+      if (!response.ok) throw new Error('Failed to update wishlist');
+      const data = await response.json();
+      
+      // Update state without needing to refresh the page
+      setUser(prev => ({ ...prev, wishlistIds: data.wishlistIds }));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    // Added setUser here so we can update context from the Profile page
-    <AuthContext.Provider value={{ user, setUser, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, token, login, logout, toggleWishlist }}>
       {children}
     </AuthContext.Provider>
   );

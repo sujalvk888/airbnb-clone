@@ -10,7 +10,8 @@ import CreateListing from './pages/CreateListing';
 import ListingDetail from './pages/ListingDetail';
 import MyTrips from './pages/MyTrips';
 import PaymentSuccess from './pages/PaymentSuccess';
-import MyProperties from './pages/MyProperties'; // New Import
+import MyProperties from './pages/MyProperties'; 
+import Wishlist from './pages/Wishlist'; // New Import
 
 function App() {
   return (
@@ -26,7 +27,8 @@ function App() {
           <Route path="/listings/:id" element={<ListingDetail />} />
           <Route path="/my-trips" element={<MyTrips />} />
           <Route path="/payment-success" element={<PaymentSuccess />} /> 
-          <Route path="/my-properties" element={<MyProperties />} /> {/* New Route */}
+          <Route path="/my-properties" element={<MyProperties />} />
+          <Route path="/wishlist" element={<Wishlist />} /> {/* New Route */}
         </Routes>
       </div>
     </Router>
