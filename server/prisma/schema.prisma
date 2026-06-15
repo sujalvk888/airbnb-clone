@@ -45,12 +45,21 @@ model Listing {
   cleaningFee   Float @default(0)
   discountPct   Float @default(0)
 
+  // --- ORIGINAL AMENITIES ---
   hasWifi    Boolean @default(false)
   hasPool    Boolean @default(false)
   hasKitchen Boolean @default(false)
   hasParking Boolean @default(false)
   hasAc      Boolean @default(false)
   hasTv      Boolean @default(false)
+
+  // --- NEW AMENITIES ---
+  hasWasher    Boolean @default(false)
+  hasDryer     Boolean @default(false)
+  hasHeating   Boolean @default(false)
+  hasWorkspace Boolean @default(false)
+  hasGym       Boolean @default(false)
+  hasHotTub    Boolean @default(false)
 
   hostId   String
   host     User           @relation("HostListings", fields: [hostId], references: [id], onDelete: Cascade)

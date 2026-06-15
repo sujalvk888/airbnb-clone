@@ -6,12 +6,13 @@ import { AuthContext } from '../context/AuthContext';
 import { 
   Star, MapPin, Wifi, Waves, ChefHat, Car, Wind, Tv, 
   UserCircle, MessageCircle, Share, Heart, Loader2,
-  X, ChevronRight // Added new icons for modals
+  X, ChevronRight, 
+  Shirt, Fan, Flame, Monitor, Dumbbell, Bath // <-- NEW ICONS ADDED
 } from 'lucide-react';
 
 export default function ListingDetail() {
   const { id } = useParams();
-  const { user, token } = useContext(AuthContext);
+  const { user, token, toggleWishlist } = useContext(AuthContext); // Added toggleWishlist from Context
   const navigate = useNavigate();
 
   const [listing, setListing] = useState(null);
@@ -111,6 +112,13 @@ export default function ListingDetail() {
   }
 
   // --- Handlers ---
+  const isWishlisted = user?.wishlistIds?.includes(listing?.id);
+
+  const handleSaveClick = () => {
+    if (!user) return navigate('/login');
+    toggleWishlist(listing.id);
+  };
+
   const handleReserveClick = async () => {
     if (!token) {
       navigate('/login');
@@ -240,7 +248,13 @@ export default function ListingDetail() {
             </div>
             <div className="flex items-center gap-4 text-sm font-medium underline">
               <button className="flex items-center gap-1 hover:bg-gray-100 p-2 rounded-lg transition"><Share className="h-4 w-4" /> Share</button>
-              <button className="flex items-center gap-1 hover:bg-gray-100 p-2 rounded-lg transition"><Heart className="h-4 w-4" /> Save</button>
+              <button 
+                onClick={handleSaveClick}
+                className="flex items-center gap-1 hover:bg-gray-100 p-2 rounded-lg transition"
+              >
+                <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-[#FF385C] text-[#FF385C]' : 'text-gray-900'}`} /> 
+                {isWishlisted ? 'Saved' : 'Save'}
+              </button>
             </div>
           </div>
         </div>
@@ -312,12 +326,21 @@ export default function ListingDetail() {
             <div className="py-6 border-b">
               <h3 className="text-xl font-bold text-gray-900 mb-6">What this place offers</h3>
               <div className="grid grid-cols-2 gap-4">
+                {/* Original 6 Amenities */}
                 {listing.hasWifi && <div className="flex items-center gap-4 text-gray-700"><Wifi className="h-6 w-6" /> <span>Fast Wifi</span></div>}
                 {listing.hasPool && <div className="flex items-center gap-4 text-gray-700"><Waves className="h-6 w-6" /> <span>Private Pool</span></div>}
                 {listing.hasKitchen && <div className="flex items-center gap-4 text-gray-700"><ChefHat className="h-6 w-6" /> <span>Full Kitchen</span></div>}
                 {listing.hasParking && <div className="flex items-center gap-4 text-gray-700"><Car className="h-6 w-6" /> <span>Free Parking</span></div>}
                 {listing.hasAc && <div className="flex items-center gap-4 text-gray-700"><Wind className="h-6 w-6" /> <span>Air Conditioning</span></div>}
                 {listing.hasTv && <div className="flex items-center gap-4 text-gray-700"><Tv className="h-6 w-6" /> <span>Flatscreen TV</span></div>}
+                
+                {/* 6 New Amenities */}
+                {listing.hasWasher && <div className="flex items-center gap-4 text-gray-700"><Shirt className="h-6 w-6" /> <span>Washer</span></div>}
+                {listing.hasDryer && <div className="flex items-center gap-4 text-gray-700"><Fan className="h-6 w-6" /> <span>Dryer</span></div>}
+                {listing.hasHeating && <div className="flex items-center gap-4 text-gray-700"><Flame className="h-6 w-6" /> <span>Heating</span></div>}
+                {listing.hasWorkspace && <div className="flex items-center gap-4 text-gray-700"><Monitor className="h-6 w-6" /> <span>Dedicated Workspace</span></div>}
+                {listing.hasGym && <div className="flex items-center gap-4 text-gray-700"><Dumbbell className="h-6 w-6" /> <span>Gym Access</span></div>}
+                {listing.hasHotTub && <div className="flex items-center gap-4 text-gray-700"><Bath className="h-6 w-6" /> <span>Private Hot Tub</span></div>}
               </div>
             </div>
 

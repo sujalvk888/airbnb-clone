@@ -14,34 +14,23 @@ router.get('/', async (req, res) => {
 
     let queryObj = {};
 
-    // 1. Filter by Location
     if (location) {
-      queryObj.location = {
-        contains: location,
-        mode: 'insensitive' 
-      };
+      queryObj.location = { contains: location, mode: 'insensitive' };
     }
 
-    // 2. Filter by Guest Capacity
     if (guestCount) {
-      queryObj.maxGuests = {
-        gte: parseInt(guestCount) 
-      };
+      queryObj.maxGuests = { gte: parseInt(guestCount) };
     }
 
-    // 3. Filter by Date Availability (The Magic Feature)
     if (checkIn && checkOut) {
       const searchCheckIn = new Date(checkIn);
       const searchCheckOut = new Date(checkOut);
 
-      // We only return listings that have NONE of these overlapping conditions
       queryObj.bookings = {
         none: {
           status: 'CONFIRMED',
           OR: [
             {
-              // Overlap logic: A booking exists where its check-in is before our desired check-out, 
-              // AND its check-out is after our desired check-in.
               checkIn: { lt: searchCheckOut },
               checkOut: { gt: searchCheckIn }
             }
@@ -161,6 +150,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       maxGuests, bedrooms, beds, baths,
       pricePerNight, cleaningFee, discountPct,
       hasWifi, hasPool, hasKitchen, hasParking, hasAc, hasTv,
+      hasWasher, hasDryer, hasHeating, hasWorkspace, hasGym, hasHotTub, // <-- ADDED
       coverImageIndex
     } = req.body;
 
@@ -183,9 +173,21 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
         pricePerNight: parseFloat(pricePerNight),
         cleaningFee: parseFloat(cleaningFee) || 0,
         discountPct: parseFloat(discountPct) || 0,
-        hasWifi: hasWifi === 'true', hasPool: hasPool === 'true',
-        hasKitchen: hasKitchen === 'true', hasParking: hasParking === 'true',
-        hasAc: hasAc === 'true', hasTv: hasTv === 'true',
+        
+        // --- PARSE ALL BOOLEANS ---
+        hasWifi: hasWifi === 'true', 
+        hasPool: hasPool === 'true',
+        hasKitchen: hasKitchen === 'true', 
+        hasParking: hasParking === 'true',
+        hasAc: hasAc === 'true', 
+        hasTv: hasTv === 'true',
+        hasWasher: hasWasher === 'true', 
+        hasDryer: hasDryer === 'true',
+        hasHeating: hasHeating === 'true', 
+        hasWorkspace: hasWorkspace === 'true',
+        hasGym: hasGym === 'true', 
+        hasHotTub: hasHotTub === 'true',
+
         hostId: req.user.id,
         images: { create: imagesData }
       },

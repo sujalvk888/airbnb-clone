@@ -12,13 +12,30 @@ export default function CreateListing() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  // Property Data State
+  // Property Data State (Updated with 6 new amenities)
   const [formData, setFormData] = useState({
     title: '', description: '', propertyType: 'Entire home', location: '', googleMapsUrl: '',
     maxGuests: 1, bedrooms: 1, beds: 1, baths: 1,
     pricePerNight: 50, cleaningFee: 0, discountPct: 0,
-    hasWifi: false, hasPool: false, hasKitchen: false, hasParking: false, hasAc: false, hasTv: false
+    hasWifi: false, hasPool: false, hasKitchen: false, hasParking: false, hasAc: false, hasTv: false,
+    hasWasher: false, hasDryer: false, hasHeating: false, hasWorkspace: false, hasGym: false, hasHotTub: false
   });
+
+  // Array to cleanly map out the UI
+  const amenitiesList = [
+    { id: 'Wifi', label: 'Wifi' },
+    { id: 'Pool', label: 'Pool' },
+    { id: 'Kitchen', label: 'Kitchen' },
+    { id: 'Parking', label: 'Free Parking' },
+    { id: 'Ac', label: 'A/C' },
+    { id: 'Tv', label: 'TV' },
+    { id: 'Washer', label: 'Washer' },
+    { id: 'Dryer', label: 'Dryer' },
+    { id: 'Heating', label: 'Heating' },
+    { id: 'Workspace', label: 'Dedicated Workspace' },
+    { id: 'Gym', label: 'Gym' },
+    { id: 'HotTub', label: 'Hot Tub' }
+  ];
 
   // Image State
   const [imageFiles, setImageFiles] = useState([]);
@@ -205,10 +222,10 @@ export default function CreateListing() {
             <h2 className="text-2xl font-bold text-gray-800">Amenities</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {['Wifi', 'Pool', 'Kitchen', 'Parking', 'Ac', 'Tv'].map(amenity => (
-              <label key={amenity} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition ${formData[`has${amenity}`] ? 'border-brand bg-rose-50' : 'border-gray-200 hover:border-brand'}`}>
-                <input type="checkbox" name={`has${amenity}`} checked={formData[`has${amenity}`]} onChange={handleChange} className="w-5 h-5 accent-brand" />
-                <span className="font-medium text-gray-700">{amenity === 'Ac' ? 'A/C' : amenity === 'Tv' ? 'TV' : amenity}</span>
+            {amenitiesList.map(amenity => (
+              <label key={amenity.id} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition ${formData[`has${amenity.id}`] ? 'border-brand bg-rose-50' : 'border-gray-200 hover:border-brand'}`}>
+                <input type="checkbox" name={`has${amenity.id}`} checked={formData[`has${amenity.id}`]} onChange={handleChange} className="w-5 h-5 accent-brand" />
+                <span className="font-medium text-gray-700">{amenity.label}</span>
               </label>
             ))}
           </div>
