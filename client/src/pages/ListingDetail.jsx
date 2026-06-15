@@ -85,6 +85,22 @@ export default function ListingDetail() {
   const liveAvgRating = reviews.length > 0 ? (totalRating / reviews.length).toFixed(2) : 'New';
   const isHost = user?.id === listing.hostId;
 
+  // --- Map URL Logic ---
+  // Default to a generic search for the city/country
+  let mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(listing.location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+
+  // If the host provided a specific Google Maps URL, use it instead!
+  if (listing.googleMapsUrl) {
+    // If they pasted the entire <iframe src="..."></iframe> tag, extract just the URL
+    const match = listing.googleMapsUrl.match(/src="([^"]+)"/);
+    if (match) {
+      mapSrc = match[1];
+    } else {
+      // Otherwise, assume they just pasted the raw URL
+      mapSrc = listing.googleMapsUrl;
+    }
+  }
+
   // --- Handlers ---
   const handleReserveClick = async () => {
     if (!token) {
@@ -136,7 +152,6 @@ export default function ListingDetail() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to submit review');
 
-      // Add the new review to the top of the local state array to display instantly
       setReviews([data, ...reviews]);
       setReviewComment('');
       setReviewRating(5);
@@ -200,9 +215,9 @@ export default function ListingDetail() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{listing.propertyType} hosted by {listing.host.firstName}</h2>
               <div className="flex gap-2 text-gray-900 mt-1 font-light">
-                <span>{listing.maxGuests} guests</span> &middot; 
-                <span>{listing.bedrooms} bedrooms</span> &middot; 
-                <span>{listing.beds} beds</span> &middot; 
+                <span>{listing.maxGuests} guests</span> · 
+                <span>{listing.bedrooms} bedrooms</span> · 
+                <span>{listing.beds} beds</span> · 
                 <span>{listing.baths} baths</span>
               </div>
             </div>
@@ -231,6 +246,25 @@ export default function ListingDetail() {
             </div>
           </div>
 
+          {/* --- SMART GEOLOCATION MAP SECTION --- */}
+          <div className="py-8 border-b">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Where you'll be</h3>
+            <p className="text-gray-700 mb-6">{listing.location}</p>
+            <div className="w-full h-[400px] rounded-2xl overflow-hidden bg-gray-200 border border-gray-300 shadow-sm relative z-0">
+              <iframe
+                title={`Map of ${listing.location}`}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={mapSrc}
+              ></iframe>
+            </div>
+          </div>
+          {/* ------------------------------------- */}
+
           <div className="py-6 border-b">
              <h3 className="text-xl font-bold text-gray-900 mb-6">Meet your Host</h3>
              <div className="bg-gray-100 p-6 rounded-2xl flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
@@ -257,10 +291,9 @@ export default function ListingDetail() {
           <div className="py-6">
             <div className="flex items-center gap-2 mb-8">
               <Star className="h-6 w-6 fill-gray-900 text-gray-900" />
-              <h3 className="text-2xl font-bold text-gray-900">{liveAvgRating} &middot; {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</h3>
+              <h3 className="text-2xl font-bold text-gray-900">{liveAvgRating} · {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</h3>
             </div>
 
-            {/* Leave a Review Form (Hidden if not logged in OR if the user is the Host) */}
             {user && !isHost && (
               <div className="bg-gray-50 p-6 rounded-2xl mb-10 border border-gray-200">
                 <h4 className="font-bold text-gray-900 mb-4">Leave a Review</h4>
@@ -303,7 +336,6 @@ export default function ListingDetail() {
               </div>
             )}
 
-            {/* Display Reviews Grid */}
             {reviews.length === 0 ? (
               <p className="text-gray-500 italic">No reviews yet.</p>
             ) : (
@@ -322,7 +354,7 @@ export default function ListingDetail() {
                         <h4 className="font-bold text-gray-900">{rev.user.firstName}</h4>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-gray-900 text-gray-900"/> {rev.rating}</span>
-                          <span>&middot;</span>
+                          <span>·</span>
                           <span>{new Date(rev.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
                         </div>
                       </div>
@@ -336,7 +368,7 @@ export default function ListingDetail() {
         </div>
 
         {/* Right Column: Sticky Booking Widget */}
-        <div className="w-full lg:w-1/3 relative">
+        <div className="w-full lg:w-1/3 relative z-10">
           <div className="sticky top-28 bg-white p-6 rounded-2xl shadow-xl border border-gray-200">
             <div className="flex items-baseline gap-1 mb-6">
               <span className="text-2xl font-bold text-gray-900">${listing.pricePerNight}</span>
@@ -344,49 +376,25 @@ export default function ListingDetail() {
             </div>
 
             <div className="border border-gray-300 rounded-xl mb-4 overflow-hidden">
-  <div className="flex border-b border-gray-300">
-    <div className="w-1/2 p-3 border-r border-gray-300">
-      <label className="block text-[10px] font-bold uppercase text-gray-900">Check-in</label>
-      <input
-        type="date"
-        min={new Date().toISOString().split('T')[0]}
-        value={checkIn}
-        onChange={(e) => setCheckIn(e.target.value)}
-        className="w-full outline-none text-sm bg-transparent cursor-pointer"
-      />
-    </div>
-
-    <div className="w-1/2 p-3">
-      <label className="block text-[10px] font-bold uppercase text-gray-900">Check-out</label>
-      <input
-        type="date"
-        min={checkIn || new Date().toISOString().split('T')[0]}
-        value={checkOut}
-        onChange={(e) => setCheckOut(e.target.value)}
-        className="w-full outline-none text-sm bg-transparent cursor-pointer"
-      />
-    </div>
-  </div>
-
-  <div className="p-3">
-    <label className="block text-[10px] font-bold uppercase text-gray-900">
-      Guests
-    </label>
-
-    <select
-      value={guests}
-      onChange={(e) => setGuests(Number(e.target.value))}
-      className="w-full outline-none text-sm bg-transparent cursor-pointer mt-1"
-    >
-      {[...Array(listing.maxGuests)].map((_, i) => (
-        <option key={i + 1} value={i + 1}>
-          {i + 1} {i === 0 ? 'guest' : 'guests'}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
-
+              <div className="flex border-b border-gray-300">
+                <div className="w-1/2 p-3 border-r border-gray-300">
+                  <label className="block text-[10px] font-bold uppercase text-gray-900">Check-in</label>
+                  <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="w-full outline-none text-sm bg-transparent cursor-pointer" />
+                </div>
+                <div className="w-1/2 p-3">
+                  <label className="block text-[10px] font-bold uppercase text-gray-900">Check-out</label>
+                  <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} min={checkIn} className="w-full outline-none text-sm bg-transparent cursor-pointer" />
+                </div>
+              </div>
+              <div className="p-3">
+                <label className="block text-[10px] font-bold uppercase text-gray-900">Guests</label>
+                <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="w-full outline-none text-sm bg-transparent cursor-pointer mt-1">
+                  {[...Array(listing.maxGuests)].map((_, i) => (
+                    <option key={i+1} value={i+1}>{i+1} {i === 0 ? 'guest' : 'guests'}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             <button 
               onClick={handleReserveClick}
