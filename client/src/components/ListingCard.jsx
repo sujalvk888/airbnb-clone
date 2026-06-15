@@ -1,7 +1,7 @@
 // client/src/components/ListingCard.jsx
 
-import { useState, useContext } from 'react';
-import { Star, Heart, AlertCircle } from 'lucide-react';
+import { useState, useContext, useEffect } from 'react';
+import { Star, Heart, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
@@ -9,14 +9,25 @@ export default function ListingCard({ listing }) {
   const { user, toggleWishlist } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // State to control our new beautiful popup
+  // State to control our alerts and toasts
   const [showHostAlert, setShowHostAlert] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
 
   // Check if this listing is in the user's wishlist array
   const isWishlisted = user?.wishlistIds?.includes(listing.id);
   
   // Check if the current user is the host of this specific listing
   const isHost = user && user.id === listing.hostId;
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   const handleWishlistClick = (e) => {
     e.preventDefault();  // Stop default navigation
@@ -33,7 +44,24 @@ export default function ListingCard({ listing }) {
       return; 
     }
 
+    // Determine what action we are about to take
+    const isAdding = !isWishlisted;
+
+    // Call the backend via context
     toggleWishlist(listing.id);
+
+    // Show the appropriate beautiful toast message
+    if (isAdding) {
+      setToastMessage({
+        type: 'added',
+        text: 'Added to your wishlist'
+      });
+    } else {
+      setToastMessage({
+        type: 'removed',
+        text: 'Removed from your wishlist'
+      });
+    }
   };
 
   return (
@@ -72,6 +100,31 @@ export default function ListingCard({ listing }) {
             >
               Got it
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- BEAUTIFUL TOAST NOTIFICATION --- */}
+      {toastMessage && (
+        <div 
+          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[110] animate-in slide-in-from-bottom-8 fade-in duration-300"
+          onClick={(e) => {
+             // Stop clicks on the toast from navigating
+             e.preventDefault();
+             e.stopPropagation();
+          }}
+        >
+          <div className="bg-gray-900 text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 pr-8 min-w-max">
+            {toastMessage.type === 'added' ? (
+              <div className="bg-[#FF385C] rounded-full p-1">
+                <CheckCircle className="h-4 w-4 text-white" />
+              </div>
+            ) : (
+              <div className="bg-gray-700 rounded-full p-1">
+                <Info className="h-4 w-4 text-gray-300" />
+              </div>
+            )}
+            <span className="font-medium text-sm">{toastMessage.text}</span>
           </div>
         </div>
       )}
