@@ -6,7 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import { 
   Star, MapPin, Wifi, Waves, ChefHat, Car, Wind, Tv, 
   UserCircle, MessageCircle, Share, Heart, Loader2,
-  X, ChevronRight, 
+  X, ChevronRight, AlertCircle, CheckCircle, Info, // Added UI Icons
   Shirt, Fan, Flame, Monitor, Dumbbell, Bath
 } from 'lucide-react';
 
@@ -33,19 +33,31 @@ export default function ListingDetail() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState('');
 
-  // UI Modals State
+  // UI Modals & Toast State
   const [showDescModal, setShowDescModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showHostAlert, setShowHostAlert] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   // Prevent background scrolling when a modal is open
   useEffect(() => {
-    if (showDescModal || showImageModal) {
+    if (showDescModal || showImageModal || showHostAlert) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
     return () => { document.body.style.overflow = 'auto'; };
-  }, [showDescModal, showImageModal]);
+  }, [showDescModal, showImageModal, showHostAlert]);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -114,9 +126,55 @@ export default function ListingDetail() {
   // --- Handlers ---
   const isWishlisted = user?.wishlistIds?.includes(listing?.id);
 
+  // 1. Share Logic
+  const handleShareClick = async () => {
+    const shareData = {
+      title: listing.title,
+      text: `Check out this amazing place I found: ${listing.title}`,
+      url: window.location.href,
+    };
+    
+    // Use native device sharing if available (mobile/modern browsers)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback for older browsers: copy link to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      setToastMessage({ type: 'added', text: 'Link copied to clipboard!' });
+    }
+  };
+
+  // 2. Smooth Scrolling Logic
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      // Offset by 100px so the sticky navbar doesn't cover the title
+      const y = element.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
+  // 3. Wishlist Save Logic
   const handleSaveClick = () => {
     if (!user) return navigate('/login');
+    
+    if (isHost) {
+      setShowHostAlert(true);
+      return; 
+    }
+
+    const isAdding = !isWishlisted;
     toggleWishlist(listing.id);
+
+    if (isAdding) {
+      setToastMessage({ type: 'added', text: 'Added to your wishlist' });
+    } else {
+      setToastMessage({ type: 'removed', text: 'Removed from your wishlist' });
+    }
   };
 
   const handleReserveClick = async () => {
@@ -182,10 +240,51 @@ export default function ListingDetail() {
   return (
     <>
       {/* ============================== */}
-      {/* MODALS SECTION                 */}
+      {/* MODALS & NOTIFICATIONS         */}
       {/* ============================== */}
 
-      {/* 1. Description Modal */}
+      {/* Beautiful Host Alert Popup */}
+      {showHostAlert && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => setShowHostAlert(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="h-16 w-16 bg-red-50 text-[#FF385C] rounded-full flex items-center justify-center mb-5">
+              <AlertCircle className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Wait a second!</h3>
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              You cannot add your own properties to your wishlist.
+            </p>
+            <button 
+              onClick={() => setShowHostAlert(false)}
+              className="w-full bg-[#FF385C] text-white font-bold py-3.5 rounded-xl hover:bg-rose-600 transition shadow-sm active:scale-[0.98]"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Beautiful Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[110] animate-in slide-in-from-bottom-8 fade-in duration-300 pointer-events-none">
+          <div className="bg-gray-900 text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 pr-8 min-w-max">
+            {toastMessage.type === 'added' ? (
+              <div className="bg-[#FF385C] rounded-full p-1"><CheckCircle className="h-4 w-4 text-white" /></div>
+            ) : (
+              <div className="bg-gray-700 rounded-full p-1"><Info className="h-4 w-4 text-gray-300" /></div>
+            )}
+            <span className="font-medium text-sm">{toastMessage.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Description Modal */}
       {showDescModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 sm:p-6 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl relative">
@@ -204,7 +303,7 @@ export default function ListingDetail() {
         </div>
       )}
 
-      {/* 2. Full Image Gallery Modal */}
+      {/* Full Image Gallery Modal */}
       {showImageModal && (
         <div className="fixed inset-0 z-[100] bg-white overflow-y-auto animate-in slide-in-from-bottom-8 duration-300">
           <div className="sticky top-0 bg-white/90 backdrop-blur-md px-6 py-4 z-10 flex items-center justify-between border-b border-gray-200">
@@ -215,12 +314,7 @@ export default function ListingDetail() {
           </div>
           <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col gap-8">
             {listing.images?.map((img, idx) => (
-              <img 
-                key={idx} 
-                src={img.url} 
-                alt={`Property full view ${idx}`} 
-                className="w-full h-auto object-cover rounded-lg shadow-sm" 
-              />
+              <img key={idx} src={img.url} alt={`Property full view ${idx}`} className="w-full h-auto object-cover rounded-lg shadow-sm" />
             ))}
           </div>
         </div>
@@ -234,41 +328,55 @@ export default function ListingDetail() {
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{listing.title}</h1>
-          <div className="flex justify-between items-end">
-            <div className="flex items-center gap-4 text-sm font-medium text-gray-700">
-              <span className="flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
+            
+            {/* Navigational Quick Links */}
+            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-gray-700">
+              <span 
+                onClick={() => scrollToSection('reviews-section')}
+                className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 px-2 py-1 -ml-2 rounded transition"
+              >
                 <Star className="h-4 w-4 fill-gray-900 text-gray-900" />
                 {liveAvgRating}
               </span>
-              <span className="underline cursor-pointer">{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</span>
-              <span className="flex items-center gap-1 underline cursor-pointer">
+              <span 
+                onClick={() => scrollToSection('reviews-section')}
+                className="underline cursor-pointer hover:text-gray-900"
+              >
+                {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
+              </span>
+              <span 
+                onClick={() => scrollToSection('location-section')}
+                className="flex items-center gap-1 underline cursor-pointer hover:text-gray-900"
+              >
                 <MapPin className="h-4 w-4" />
                 {listing.location}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-sm font-medium underline">
-              <button className="flex items-center gap-1 hover:bg-gray-100 p-2 rounded-lg transition"><Share className="h-4 w-4" /> Share</button>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 text-sm font-medium underline">
+              <button 
+                onClick={handleShareClick}
+                className="flex items-center gap-1 hover:bg-gray-100 p-2 rounded-lg transition"
+              >
+                <Share className="h-4 w-4" /> Share
+              </button>
               <button 
                 onClick={handleSaveClick}
                 className="flex items-center gap-1 hover:bg-gray-100 p-2 rounded-lg transition"
               >
-                <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-[#FF385C] text-[#FF385C]' : 'text-gray-900'}`} /> 
+                <Heart className={`h-4 w-4 transition-colors duration-200 ${isWishlisted ? 'fill-[#FF385C] text-[#FF385C] stroke-none' : 'text-gray-900'}`} /> 
                 {isWishlisted ? 'Saved' : 'Save'}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Responsive Image Gallery (Clickable) */}
+        {/* Responsive Image Gallery */}
         <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory rounded-xl gap-2 no-scrollbar">
           {listing.images?.map((img, idx) => (
-            <img 
-              key={idx} 
-              src={img.url} 
-              alt={`Property ${idx}`} 
-              onClick={() => setShowImageModal(true)}
-              className="h-64 w-full object-cover shrink-0 snap-center cursor-pointer active:opacity-90 transition" 
-            />
+            <img key={idx} src={img.url} alt={`Property ${idx}`} onClick={() => setShowImageModal(true)} className="h-64 w-full object-cover shrink-0 snap-center cursor-pointer active:opacity-90 transition" />
           ))}
         </div>
 
@@ -287,7 +395,6 @@ export default function ListingDetail() {
         {/* Main Content Split */}
         <div className="flex flex-col lg:flex-row gap-12 mt-10">
           
-          {/* Left Column: Details */}
           <div className="w-full lg:w-2/3">
             <div className="flex justify-between items-start pb-6 border-b">
               <div>
@@ -308,16 +415,12 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            {/* Description Area with Read More Logic */}
             <div className="py-6 border-b text-gray-700 whitespace-pre-line leading-relaxed">
               <div className="line-clamp-6">
                 {listing.description}
               </div>
               {listing.description.length > 300 && (
-                <button 
-                  onClick={() => setShowDescModal(true)} 
-                  className="flex items-center gap-1 font-bold underline mt-4 hover:text-gray-900 transition"
-                >
+                <button onClick={() => setShowDescModal(true)} className="flex items-center gap-1 font-bold underline mt-4 hover:text-gray-900 transition">
                   Show more <ChevronRight className="h-4 w-4" />
                 </button>
               )}
@@ -326,15 +429,12 @@ export default function ListingDetail() {
             <div className="py-6 border-b">
               <h3 className="text-xl font-bold text-gray-900 mb-6">What this place offers</h3>
               <div className="grid grid-cols-2 gap-4">
-                {/* Original 6 Amenities */}
                 {listing.hasWifi && <div className="flex items-center gap-4 text-gray-700"><Wifi className="h-6 w-6" /> <span>Fast Wifi</span></div>}
                 {listing.hasPool && <div className="flex items-center gap-4 text-gray-700"><Waves className="h-6 w-6" /> <span>Private Pool</span></div>}
                 {listing.hasKitchen && <div className="flex items-center gap-4 text-gray-700"><ChefHat className="h-6 w-6" /> <span>Full Kitchen</span></div>}
                 {listing.hasParking && <div className="flex items-center gap-4 text-gray-700"><Car className="h-6 w-6" /> <span>Free Parking</span></div>}
                 {listing.hasAc && <div className="flex items-center gap-4 text-gray-700"><Wind className="h-6 w-6" /> <span>Air Conditioning</span></div>}
                 {listing.hasTv && <div className="flex items-center gap-4 text-gray-700"><Tv className="h-6 w-6" /> <span>Flatscreen TV</span></div>}
-                
-                {/* 6 New Amenities */}
                 {listing.hasWasher && <div className="flex items-center gap-4 text-gray-700"><Shirt className="h-6 w-6" /> <span>Washer</span></div>}
                 {listing.hasDryer && <div className="flex items-center gap-4 text-gray-700"><Fan className="h-6 w-6" /> <span>Dryer</span></div>}
                 {listing.hasHeating && <div className="flex items-center gap-4 text-gray-700"><Flame className="h-6 w-6" /> <span>Heating</span></div>}
@@ -344,21 +444,12 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            {/* --- SMART GEOLOCATION MAP SECTION --- */}
-            <div className="py-8 border-b">
+            {/* Added ID for Location Scrolling */}
+            <div id="location-section" className="py-8 border-b">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Where you'll be</h3>
               <p className="text-gray-700 mb-6">{listing.location}</p>
               <div className="w-full h-[400px] rounded-2xl overflow-hidden bg-gray-200 border border-gray-300 shadow-sm relative z-0">
-                <iframe
-                  title={`Map of ${listing.location}`}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src={mapSrc}
-                ></iframe>
+                <iframe title={`Map of ${listing.location}`} width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc}></iframe>
               </div>
             </div>
 
@@ -384,8 +475,8 @@ export default function ListingDetail() {
                </div>
             </div>
 
-            {/* --- REVIEWS SECTION --- */}
-            <div className="py-6">
+            {/* Added ID for Review Scrolling */}
+            <div id="reviews-section" className="py-6">
               <div className="flex items-center gap-2 mb-8">
                 <Star className="h-6 w-6 fill-gray-900 text-gray-900" />
                 <h3 className="text-2xl font-bold text-gray-900">{liveAvgRating} · {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</h3>
@@ -399,33 +490,16 @@ export default function ListingDetail() {
                   <form onSubmit={handleReviewSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                      <select 
-                        value={reviewRating} 
-                        onChange={(e) => setReviewRating(Number(e.target.value))}
-                        className="w-full md:w-32 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand"
-                      >
-                        {[5, 4, 3, 2, 1].map(num => (
-                          <option key={num} value={num}>{num} Stars</option>
-                        ))}
+                      <select value={reviewRating} onChange={(e) => setReviewRating(Number(e.target.value))} className="w-full md:w-32 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand">
+                        {[5, 4, 3, 2, 1].map(num => (<option key={num} value={num}>{num} Stars</option>))}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
-                      <textarea 
-                        required
-                        rows="3"
-                        placeholder="Share your experience..."
-                        value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand resize-none"
-                      />
+                      <textarea required rows="3" placeholder="Share your experience..." value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand resize-none" />
                     </div>
                     <div className="flex justify-end">
-                      <button 
-                        type="submit" 
-                        disabled={isSubmittingReview}
-                        className="bg-gray-900 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
-                      >
+                      <button type="submit" disabled={isSubmittingReview} className="bg-gray-900 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-800 transition disabled:opacity-50">
                         {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
                       </button>
                     </div>
