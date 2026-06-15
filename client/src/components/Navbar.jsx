@@ -3,10 +3,11 @@
 import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Home, UserCircle, LogOut } from 'lucide-react';
+import { Home, UserCircle, LogOut, Loader2 } from 'lucide-react'; // Added Loader2
 
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  // Added 'loading' destructuring
+  const { user, logout, loading } = useContext(AuthContext); 
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -26,9 +27,14 @@ export default function Navbar() {
 
           {/* Right side navigation */}
           <div className="flex items-center gap-4">
-            {user ? (
+            {loading ? (
+              // 1. Loading State: Show spinner while AuthContext checks the token
+              <div className="flex items-center justify-center px-4">
+                <Loader2 className="h-5 w-5 text-gray-300 animate-spin" />
+              </div>
+            ) : user ? (
+              // 2. Logged In State
               <div className="flex items-center gap-2 sm:gap-4">
-
                 <Link
                   to="/my-trips"
                   className="text-sm font-bold text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-full transition hidden sm:block"
@@ -77,6 +83,7 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
+              // 3. Logged Out State
               <div className="flex items-center gap-4">
                 <Link
                   to="/login"
