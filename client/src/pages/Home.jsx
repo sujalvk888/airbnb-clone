@@ -1,23 +1,13 @@
 // client/src/pages/Home.jsx
 
 import { useState, useEffect } from 'react';
-import { Search, Map, Coffee, Trees, Waves, Mountain, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import ListingCard from '../components/ListingCard';
-
-// Authentic Category Mock Data
-const CATEGORIES = [
-  { label: 'Amazing pools', icon: Waves },
-  { label: 'Beachfront', icon: Map },
-  { label: 'Cabins', icon: Trees },
-  { label: 'Bed & breakfasts', icon: Coffee },
-  { label: 'Amazing views', icon: Mountain },
-];
 
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeCategory, setActiveCategory] = useState('Amazing pools');
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -40,12 +30,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       
-      {/* Sub-Header: Search & Categories */}
-      <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm pt-4 pb-2">
+      {/* Sub-Header: Search */}
+      <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Authentic Pill Search Bar */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center">
             <div className="flex items-center border border-gray-300 rounded-full shadow-sm hover:shadow-md transition cursor-pointer divide-x divide-gray-200">
               <button className="px-6 py-3 text-sm font-medium text-gray-900 rounded-l-full hover:bg-gray-50">
                 Anywhere
@@ -62,27 +52,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Category Icons */}
-          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar pb-2">
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const isActive = activeCategory === cat.label;
-              return (
-                <button
-                  key={cat.label}
-                  onClick={() => setActiveCategory(cat.label)}
-                  className={`flex flex-col items-center gap-2 min-w-max pb-2 border-b-2 transition ${
-                    isActive 
-                      ? 'border-gray-900 text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="h-6 w-6" />
-                  <span className="text-xs font-medium">{cat.label}</span>
-                </button>
-              );
-            })}
-          </div>
         </div>
       </div>
 
