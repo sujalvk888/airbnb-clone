@@ -38,14 +38,16 @@ app.use(cors(corsOptions));
 // 5. JSON Body Parser
 app.use(express.json());
 
-// 6. Global Rate Limiting (100 requests per 15 minutes per IP)
+// 6. Global Rate Limiting (Environment Aware)
+// Uses strict limits in production, but relaxed limits for local HMR development
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 100 : 3000, 
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true, 
   legacyHeaders: false,
 });
+
 // Apply limiter globally to all API routes
 app.use('/api/', limiter);
 
@@ -60,12 +62,20 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Register API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went terribly wrong!' });
+});
+
+// Start Server
 app.listen(PORT, () => {
   console.log(`Production-ready server actively listening on port ${PORT}`);
 });

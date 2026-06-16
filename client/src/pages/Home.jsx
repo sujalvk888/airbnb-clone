@@ -15,7 +15,6 @@ export default function Home() {
   const [searchCheckIn, setSearchCheckIn] = useState('');
   const [searchCheckOut, setSearchCheckOut] = useState('');
 
-  // Fetch function with an isReset flag to bypass current state during reset
   const fetchListings = async (e, isReset = false) => {
     if (e && typeof e.preventDefault === 'function') e.preventDefault(); 
     setLoading(true);
@@ -46,12 +45,10 @@ export default function Home() {
     }
   };
 
-  // Run once on initial page load
   useEffect(() => {
     fetchListings();
   }, []);
 
-  // Listen for logo click events from the Navbar
   useEffect(() => {
     const handleReset = () => {
       setSearchLocation('');
@@ -70,75 +67,82 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       
-      {/* Sub-Header: Advanced Visual Search Bar */}
-      <div className="sticky top-16 z-40 bg-white border-b border-gray-200 py-6 overflow-x-auto no-scrollbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-max">
+      {/* Sub-Header: Responsive Visual Search Bar */}
+      <div className="sticky top-16 z-40 bg-white border-b border-gray-200 py-4 md:py-6 overflow-x-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           
-          <div className="flex justify-center">
-            <form 
-              onSubmit={fetchListings}
-              className="flex items-center border border-gray-200 rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.08)] bg-white divide-x divide-gray-200 overflow-hidden"
-            >
-              {/* Where Section */}
-              <div className="flex flex-col px-8 py-3 rounded-l-full focus-within:bg-gray-100 hover:bg-gray-100 transition cursor-pointer">
-                <label className="text-xs font-bold text-gray-900 tracking-wide mb-1">Where</label>
+          <form 
+            onSubmit={fetchListings}
+            className="flex flex-col md:flex-row md:items-center border border-gray-200 rounded-3xl md:rounded-full shadow-md hover:shadow-lg transition-shadow bg-white md:divide-x divide-gray-200 overflow-hidden"
+          >
+            {/* Where Section */}
+            <div className="flex flex-col px-6 py-4 md:py-3 focus-within:bg-gray-100 hover:bg-gray-100 transition cursor-pointer w-full md:w-[35%]">
+              <label className="text-xs font-bold text-gray-900 tracking-wide mb-1">Where</label>
+              <input 
+                type="text" 
+                placeholder="Search destinations" 
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                className="text-sm font-medium text-gray-900 bg-transparent outline-none w-full placeholder-gray-500"
+              />
+            </div>
+            
+            {/* When Section */}
+            <div className="flex flex-col px-6 py-4 md:py-3 border-t border-gray-200 md:border-t-0 focus-within:bg-gray-100 hover:bg-gray-100 transition cursor-pointer w-full md:w-[35%]">
+              <label className="text-xs font-bold text-gray-900 tracking-wide mb-1">When</label>
+              <div className="flex items-center bg-transparent gap-2">
                 <input 
-                  type="text" 
-                  placeholder="Search destinations" 
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  className="text-sm font-light text-gray-600 bg-transparent outline-none w-40 sm:w-48 placeholder-gray-500"
+                  type="date" 
+                  min={today}
+                  value={searchCheckIn}
+                  onChange={(e) => setSearchCheckIn(e.target.value)}
+                  className="text-sm font-medium text-gray-900 bg-transparent outline-none w-[110px] cursor-pointer"
+                />
+                <span className="text-gray-300">-</span>
+                <input 
+                  type="date" 
+                  min={searchCheckIn || today}
+                  value={searchCheckOut}
+                  onChange={(e) => setSearchCheckOut(e.target.value)}
+                  className="text-sm font-medium text-gray-900 bg-transparent outline-none w-[110px] cursor-pointer"
+                />
+              </div>
+            </div>
+            
+            {/* Who Section */}
+            <div className="flex items-center justify-between px-6 py-4 md:py-2 md:pl-6 md:pr-2 border-t border-gray-200 md:border-t-0 focus-within:bg-gray-100 hover:bg-gray-100 transition cursor-pointer w-full md:w-[30%]">
+              <div className="flex flex-col flex-1">
+                <label className="text-xs font-bold text-gray-900 tracking-wide mb-1">Who</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  placeholder="Add guests" 
+                  value={searchGuests}
+                  onChange={(e) => setSearchGuests(e.target.value)}
+                  className="text-sm font-medium text-gray-900 bg-transparent outline-none w-full placeholder-gray-500"
                 />
               </div>
               
-              {/* When Section */}
-              <div className="flex flex-col px-8 py-3 focus-within:bg-gray-100 hover:bg-gray-100 transition cursor-pointer">
-                <label className="text-xs font-bold text-gray-900 tracking-wide mb-1">When</label>
-                <div className="flex items-center bg-transparent gap-2">
-                  <input 
-                    type="date" 
-                    min={today}
-                    value={searchCheckIn}
-                    onChange={(e) => setSearchCheckIn(e.target.value)}
-                    className="text-sm font-light text-gray-600 bg-transparent outline-none w-[110px] cursor-pointer"
-                    title="Check-in Date"
-                  />
-                  <span className="text-gray-300">-</span>
-                  <input 
-                    type="date" 
-                    min={searchCheckIn || today}
-                    value={searchCheckOut}
-                    onChange={(e) => setSearchCheckOut(e.target.value)}
-                    className="text-sm font-light text-gray-600 bg-transparent outline-none w-[110px] cursor-pointer"
-                    title="Check-out Date"
-                  />
-                </div>
-              </div>
-              
-              {/* Who Section */}
-              <div className="flex items-center pl-8 pr-2 py-2 rounded-r-full focus-within:bg-gray-100 hover:bg-gray-100 transition cursor-pointer">
-                <div className="flex flex-col">
-                  <label className="text-xs font-bold text-gray-900 tracking-wide mb-1">Who</label>
-                  <input 
-                    type="number" 
-                    min="1"
-                    placeholder="Add guests" 
-                    value={searchGuests}
-                    onChange={(e) => setSearchGuests(e.target.value)}
-                    className="text-sm font-light text-gray-600 bg-transparent outline-none w-28 placeholder-gray-500"
-                  />
-                </div>
-                {/* Large Red Search Button */}
-                <button 
-                  type="submit" 
-                  className="bg-brand h-12 w-12 rounded-full text-white ml-4 hover:bg-rose-600 transition flex items-center justify-center shrink-0 shadow-sm"
-                >
-                  <Search className="h-5 w-5" strokeWidth={3} />
-                </button>
-              </div>
-            </form>
-          </div>
+              {/* Desktop Red Search Button (Circle) */}
+              <button 
+                type="submit" 
+                className="hidden md:flex bg-brand h-12 w-12 rounded-full text-white ml-2 hover:bg-rose-600 transition items-center justify-center shrink-0 shadow-sm"
+              >
+                <Search className="h-5 w-5" strokeWidth={3} />
+              </button>
+            </div>
 
+            {/* Mobile Red Search Button (Full Width) */}
+            <div className="md:hidden p-4 bg-white border-t border-gray-100">
+              <button 
+                type="submit" 
+                className="w-full bg-brand text-white font-bold py-3 rounded-xl hover:bg-rose-600 transition flex items-center justify-center gap-2"
+              >
+                <Search className="h-5 w-5" strokeWidth={3} /> Search
+              </button>
+            </div>
+          </form>
+          
         </div>
       </div>
 
@@ -165,7 +169,7 @@ export default function Home() {
                 setSearchCheckOut('');
                 fetchListings(e, true);
               }}
-              className="px-6 py-2 border border-gray-900 text-gray-900 rounded-lg font-bold hover:bg-gray-50 transition"
+              className="px-6 py-3 border border-gray-900 text-gray-900 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm"
             >
               Clear Search
             </button>
