@@ -391,8 +391,7 @@ Recommended screenshots to include:
 ## 🎬 Live Demo
 
 <p align="center">
-  <img
-    src="./demo.gif"
+  <img src="./assets/gifs/demo.gif"
     alt="Airbnb Clone demonstrating property browsing, secure authentication, booking management, wishlist functionality, host listings, and online payments."
     width="100%">
 </p>
