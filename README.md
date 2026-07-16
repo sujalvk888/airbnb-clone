@@ -388,22 +388,14 @@ Recommended screenshots to include:
 
 ---
 
-## 🎥 Demo GIFs
+## 🎬 Live Demo
 
-> **Demo recordings will be added soon.**
-
-Suggested demonstrations:
-
-- User Registration
-- Login
-- Creating a Listing
-- Uploading Property Images
-- Browsing Listings
-- Adding to Wishlist
-- Booking a Property
-- Stripe Payment Flow
-- Reviewing a Property
-- Mobile Navigation
+<p align="center">
+  <img
+    src="./demo.gif"
+    alt="Airbnb Clone demonstrating property browsing, secure authentication, booking management, wishlist functionality, host listings, and online payments."
+    width="100%">
+</p>
 
 ---
 
