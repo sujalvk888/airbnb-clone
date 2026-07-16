@@ -367,27 +367,6 @@ airbnb-clone/
     └── index.html
 ```
 
----
-
-# 📸 Screenshots
-
-> **Screenshots will be added soon.**
-
-Recommended screenshots to include:
-
-- 🏠 Home Page
-- 🔐 Login Page
-- 📝 Registration Page
-- 🏡 Listing Details
-- ➕ Create Listing
-- ❤️ Wishlist
-- 📅 Booking Page
-- 💳 Stripe Checkout
-- 👤 User Profile
-- 📱 Mobile Responsive View
-
----
-
 ## 🎬 Live Demo
 
 <p align="center">
@@ -395,6 +374,57 @@ Recommended screenshots to include:
     alt="Airbnb Clone demonstrating property browsing, secure authentication, booking management, wishlist functionality, host listings, and online payments."
     width="100%">
 </p>
+
+---
+
+## 📸 Screenshots
+
+### 🔐 Authentication
+
+| Sign In | Create Account |
+|---------|----------------|
+| ![Login](./assets/screenshots/login.png) | ![Register](./assets/screenshots/register.png) |
+
+---
+
+### 🏠 Discover & Explore
+
+| Home Page |
+|-----------|
+| ![Home](./assets/screenshots/home.png) |
+
+| Property Details |
+|------------------|
+| ![Property Details](./assets/screenshots/property-details.png) |
+
+---
+
+### ❤️ Guest Experience
+
+| Wishlist | Trips |
+|----------|-------|
+| ![Wishlist](./assets/screenshots/wishlist.png) | ![Trips](./assets/screenshots/trips.png) |
+
+---
+
+### 🏡 Host Experience
+
+| Become a Host |
+|---------------|
+| ![Become Host](./assets/screenshots/become-host.png) |
+
+| Hosting Dashboard |
+|-------------------|
+| ![Hosting Dashboard](./assets/screenshots/hosting-dashboard.png) |
+
+---
+
+### 👤 Profile Management
+
+| Profile Settings |
+|------------------|
+| ![Profile](./assets/screenshots/profile.png) |
+
 
 ---
 
